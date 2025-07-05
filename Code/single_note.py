@@ -9,6 +9,7 @@ import random
 import time
 
 from setup import *
+from constantes import *
 
 
 def wait_for_note(in_port: mido.ports.BaseInput, target_pc: int) -> bool:
@@ -17,7 +18,9 @@ def wait_for_note(in_port: mido.ports.BaseInput, target_pc: int) -> bool:
     Retourne True si la classe de hauteur (pitch-class) reçue == cible.
     """
     for msg in in_port:
+        print(msg)
         if msg.type == "note_on" and msg.velocity > 0:
+
             played_pc   = msg.note % 12
             played_name = PC_TO_NOTE[played_pc]
 
@@ -36,6 +39,7 @@ def quiz_loop():
 
     try:
         while True:
+            flush_port(in_port)
             target_note = random.choice(NOTE_NAMES)
             target_pc   = NOTE_TO_PC[target_note]
 
