@@ -1,12 +1,24 @@
+#!/usr/bin/env python3
 """
 main.py
 -------
-Lance simplement la boucle de quiz définie dans single_note.py
-Contiendra ultérierement l'UI de selection de l'exercice à faire.
+Choix entre l'exercice note unique et l'exercice accord.
 """
 
-from single_note import *
+from single_note import quiz_loop as note_quiz
+from single_chord import chord_quiz
 
+MENU = {
+    "1": ("Jouer une NOTE",   note_quiz),
+    "2": ("Jouer un ACCORD",  chord_quiz),
+}
+
+def main():
+    print("\n=== MIDI Trainer ===")
+    for k, (label, _) in MENU.items():
+        print(f"[{k}] {label}")
+    choice = input("Sélection > ").strip()
+    MENU.get(choice, ("Option invalide", lambda: None))[1]()
 
 if __name__ == "__main__":
-    quiz_loop()
+    main()
