@@ -21,12 +21,15 @@ def wait_for_chord(port: mido.ports.BaseInput, target_set: set[int],
     Agrège toutes les notes jouées dans une fenêtre 'window' (s) après la 1ʳᵉ frappe.
     Retourne True si target_set ⊆ notes_jouées (tolérance aux extensions).
     """
-    notes = capture_notes(port, window)          # renvoie un set de pitch-classes
-    if notes >= target_set:                      # accepte notes en plus
-        print("👍 Correct!")
-        return True
-    print(f"👎 Faux : tu as joué {sorted(PC_TO_NOTE[n] for n in notes)}")
-    return False
+
+
+    while True:
+        notes = capture_notes(port, window)  # renvoie un set de pitch-classes
+        if notes >= target_set:                      # accepte notes en plus
+            print("👍 Correct!")
+            break
+        print(f"👎 Faux : tu as joué {sorted(PC_TO_NOTE[n] for n in notes)}\n reessaye")
+
 
 
 def chord_quiz():
