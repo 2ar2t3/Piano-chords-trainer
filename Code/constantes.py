@@ -1,4 +1,7 @@
 # constants.py
+""""7":    (0, 4, 7, 10),    # dominante 7
+"maj7": (0, 4, 7, 11),    # majeure 7
+"min7": (0, 3, 7, 10),"""
 
 import random
 
@@ -24,9 +27,6 @@ PC_TO_NOTE = {pc: name for name, pc in NOTE_TO_PC.items()}
 CHORD_INTERVALS = {
     "maj":  (0, 4, 7),        # root, M3, P5
     "min":  (0, 3, 7),        # root, m3, P5
-    "7":    (0, 4, 7, 10),    # dominante 7
-    "maj7": (0, 4, 7, 11),    # majeure 7
-    "min7": (0, 3, 7, 10),
 }
 
 # Génération automatique des accords
