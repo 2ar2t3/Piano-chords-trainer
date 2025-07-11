@@ -2,15 +2,20 @@
 """
 shape_quiz.py
 -------------
-Quiz « forme d’accord » : l’appli affiche un accord (Cmin, F#maj, Bbmin…)
-et l’utilisateur répond par **une seule lettre** :
-
-    W = WHITE        M = MOUNTAIN
-    O = OREO         B = BLACK SHEEP
+Quiz « forme d’accord » configurable :
+modifie SELECTED_SHAPES pour filtrer les catégories.
 """
 
 import random
-from single_chord import SHAPE_MAP     # table {accord: forme} déjà définie
+from single_chord import SHAPE_MAP     # {accord : forme}
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Modifie ici pour choisir tes formes (ex. {"WHITE", "MOUNTAIN", "OREO"})
+SELECTED_SHAPES = {"WHITE", "MOUNTAIN", "OREO"}
+# ──────────────────────────────────────────────────────────────────────────────
+
+FILTERED_CHORDS = {acc: shp for acc, shp in SHAPE_MAP.items()
+                   if shp in SELECTED_SHAPES}
 
 LETTER_TO_SHAPE = {
     "W": "WHITE",
@@ -18,32 +23,37 @@ LETTER_TO_SHAPE = {
     "O": "OREO",
     "B": "BLACK SHEEP",
 }
-VALID_LETTERS = set(LETTER_TO_SHAPE.keys())
+
+VALID_LETTERS = {k for k, v in LETTER_TO_SHAPE.items() if v in SELECTED_SHAPES}
 
 
-def shape_quizz() -> None:
-    print("\n▶️  Quiz FORME (W / M / O / B)  –  Ctrl-C pour quitter\n")
+def shape_quiz() -> None:
+    if not FILTERED_CHORDS:
+        print("⚠️  Aucun accord ne correspond aux formes choisies dans "
+              "SELECTED_SHAPES.")
+        return
+
+    label = " / ".join(sorted(VALID_LETTERS))
+    print(f"\n▶️  Quiz FORME ({label}) – Ctrl-C pour quitter\n")
+
     try:
         while True:
-            chord = random.choice(list(SHAPE_MAP.keys()))
-            correct_shape = SHAPE_MAP[chord]
+            chord, shape = random.choice(list(FILTERED_CHORDS.items()))
             correct_letter = next(k for k, v in LETTER_TO_SHAPE.items()
-                                  if v == correct_shape)
+                                  if v == shape)
 
-            # ----- poser la question -----
-            answer = input(f"→  {chord}  →  W/M/O/B ? ").strip().upper()
+            answer = input(f"→  {chord}  →  {label} ? ").strip().upper()
 
-            # ----- valider l’entrée -----
             if answer not in VALID_LETTERS:
-                print("    ❓  Tape simplement W, M, O ou B.\n")
+                print(f"    ❓  Tape {label} uniquement.\n")
                 continue
 
             if answer == correct_letter:
                 print("    👍  Correct !\n")
             else:
-                print(f"    👎  Faux : réponse attendue {correct_letter} ({correct_shape}).\n")
+                print(f"    👎  Faux : c’était {correct_letter} ({shape}).\n")
 
     except KeyboardInterrupt:
         print("\n👋  Fin du quiz forme.")
 
-shape_quizz()
+shape_quiz()

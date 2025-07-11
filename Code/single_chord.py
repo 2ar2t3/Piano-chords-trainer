@@ -16,8 +16,15 @@ from setup import choose_input_port
 from midi_io import capture_notes
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+#  ▼▼▼  MODIFIE UNIQUEMENT CETTE LIGNE  ▼▼▼
+SELECTED_SHAPES = {"WHITE", "MOUNTAIN"}      # ← mets ici les forms voulues
+#  ▲▲▲  (exemples : {"OREO"}, {"WHITE","OREO"}, {"WHITE","MOUNTAIN","OREO"})
+# ──────────────────────────────────────────────────────────────────────────────
+
+
 # --------------------------------------------------------------------------- #
-# 1. TABLE DE CORRESPONDANCE ACCORD → SHAPE  (extrait du PDF « Chords by Shape »)
+# 1. TABLE ACCORD → SHAPE  (extrait du PDF « Chords by Shape »)
 # --------------------------------------------------------------------------- #
 SHAPE_MAP = {
     # WHITE
@@ -28,7 +35,7 @@ SHAPE_MAP = {
     "Amaj": "MOUNTAIN",  "Emaj": "MOUNTAIN",  "Dmaj": "MOUNTAIN",
     "Cmin": "MOUNTAIN",  "Gmin": "MOUNTAIN",  "Fmin": "MOUNTAIN",
 
-    # OREO  (dièses **et** bémols pour couvrir les deux orthographes)
+    # OREO
     "Abmaj": "OREO", "G#maj": "OREO",  "Ebmaj": "OREO", "D#maj": "OREO",
     "Dbmaj": "OREO", "C#maj": "OREO",
     "C#min": "OREO", "Dbmin": "OREO",  "F#min": "OREO", "Gbmin": "OREO",
@@ -43,17 +50,25 @@ SHAPE_MAP = {
     "Bmin":  "BLACK SHEEP",
 }
 
+# --------------------------------------------------------------------------- #
+# 2. FILTRAGE selon SELECTED_SHAPES (aucune autre modif nécessaire)
+# --------------------------------------------------------------------------- #
+FILTERED_CHORDS = {acc: pcset for acc, pcset in CHORDS.items()
+                   if SHAPE_MAP.get(acc) in SELECTED_SHAPES}
 
+if not FILTERED_CHORDS:
+    raise ValueError("SELECTED_SHAPES ne correspond à aucun accord !")
+
+# --------------------------------------------------------------------------- #
+# 3. Fonctions
+# --------------------------------------------------------------------------- #
 def wait_for_chord(port: mido.ports.BaseInput,
                    target_set: set[int],
                    window: float = 0.15) -> None:
-    """
-    Agrège les notes jouées pendant `window` secondes après la 1ʳᵉ frappe.
-    Valide si l'ensemble obtenu == target_set (aucune note en trop).
-    """
+    """Valide l’accord strictement (ensemble égal)."""
     while True:
         notes = capture_notes(port, window)
-        if notes == target_set:                 # stricte égalité
+        if notes == target_set:
             print("👍  Correct !\n")
             break
         print(f"👎  Faux : tu as joué "
@@ -62,19 +77,15 @@ def wait_for_chord(port: mido.ports.BaseInput,
 
 def chord_quiz() -> None:
     port = choose_input_port()
-    print("\n▶️  Exercice ACCORD lancé (Ctrl-C pour quitter).\n")
+    choix = " / ".join(sorted(SELECTED_SHAPES))
+    print(f"\n▶️  Exercice ACCORD – formes : {choix}  (Ctrl-C pour quitter)\n")
 
     try:
         while True:
-            name, target = random.choice(list(CHORDS.items()))
-            shape = SHAPE_MAP.get(name)         # None si non répertorié
+            name, target = random.choice(list(FILTERED_CHORDS.items()))
+            shape = SHAPE_MAP[name]
 
-            # Affichage de la consigne avec ou sans mnémotechnique
-            if shape:
-                print(f"→  Joue l'accord : {name}   ({shape})")
-            else:
-                print(f"→  Joue l'accord : {name}")
-
+            print(f"→  Joue l'accord : {name}   ({shape})")
             wait_for_chord(port, target)
             time.sleep(1)
 
@@ -82,3 +93,7 @@ def chord_quiz() -> None:
         print("\n👋  Fin de l’exercice accord.")
     finally:
         port.close()
+
+
+if __name__ == "__main__":
+    chord_quiz()
